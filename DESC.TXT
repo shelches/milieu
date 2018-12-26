@@ -1,0 +1,82 @@
+
+1 2 /Milieu/M*I*L*I*E*U/
+999 ******* End of segment 1
+999 ******* End of segment 2
+1 1 /Good day to you, sire!/
+2 1 /Splendid day we're having, eh sire?/
+3 1 /Hi!/
+4 1 /Message 4/
+5 1 /Message 5/
+6 1 /Talk is for cowards!  Let's fight!/
+7 1 /You sleezy bastard!  My mother could outfight you!/
+8 1 /May the fleas of a thousand orcs infest your armor!/
+9 1 /Draw thy sword, coward!/
+10 1 /May you choke on a piece of orc flesh!/
+999 ******* End of segment 3
+1 1 /in an undefined room, report this!/
+2 1 /in the town square./
+3 1 /on a# cobblestone# throughfare./
+4 1 /in a# long, unused# alley./
+5 1 /on a gravel road./
+6 1 /at a dead end./
+7 1 /on a# well kept# dirt road./
+8 1 /on a stony path./
+9 1 /on a grassy road./
+10 1 /on a dirt road./
+999 ******* End of segment 4
+1 1 /at a stony#, heavily used# intersection./
+2 1 /at a dirt intersection# covered with small stones#./
+3 1 /on a gravel road./
+4 1 /at a# dirty# intersection./
+5 1 /at a# well used# dirt intersection./
+6 1 /on a# well traveled# gravel road./
+7 1 /on a stony road./
+8 1 /on a stony#, potholed# road./
+9 1 /on a# severely# damage road./
+10 1 /at a crossroads./
+999 ******* End of segment 5
+1 1 /in a small, but comfortable# farmer's# house./
+2 1 /in the home of a weaponsmith./
+3 1 /in a jail cell./
+4 1 /in the jailkeeper's office./
+5 1 /in the town hall./
+6 1 /in the weapon and armor shop./
+7 1 /in the pawn shop./
+8 1 /in a small thicket./
+9 1 /The sign says: "No trespassing!  Only naturalists are welcome!"/
+10 1 /in the Church of St. Jad II./
+999 ******* End of segment 6
+999 ******* End of segment 7
+1 1 /in the Inn of the Welcome Wench.  A bar is visible, as are+/
+2 1 /some tables and chairs./
+3 1 /on the second floor of the inn./
+4 1 /in the parlour of the innkeeper.#  The room is richly furnished.#/
+5 2 /in one of the inn's private rooms./in a private room./
+6 2 /in the dormitory./in the public sleeping room./
+7 1 /in a #cellar #storage area./
+8 1 /in a secret weapon storage room./
+9 2 /in a private suite./in a luxuriously furnished room./
+10 1 /in a meeting room./
+999 ******* End of segment 8
+1 1 /in the main hall# of the guard tower.  Several arrow slits are visible.#/
+2 1 /in the supply room for the guard tower.  Ramps lead up and down./
+3 2 /in the cellar.#  It is currently being used as a stable.#/in the basement/
+4 1 /in a small cave.  A natural spring bubbles from the ground./
+6 1 /in the guards' living quarters./in the living room./
+7 1 /in the armory./
+8 1 /in the mage's living quarters./
+9 1 /on the roof of the tower./
+10 1 /in the turret of the tower./
+999 ******* End of segment 9
+1 1 /in the nave./
+2 2 /near the altar./in the sanctuary./
+3 1 /in the priest's living quarters./
+4 1 /in the study./in the audience chamber./
+5 1 /in the church library./
+6 1 /in the chief priest's chambers./
+7 1 /in the assistant priest's chamber./
+8 1 /on the balcony# overlooking the nave#./
+9 1 /in the priests' ante chamber./
+10 1 /in the meditation room./
+999 ******* End of segment 10
+$ 

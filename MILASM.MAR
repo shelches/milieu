@@ -1,0 +1,140 @@
+
+	.title	milasm
+
+	.ident	/0-000/
+
+;	John M Ryan	December 5, 1984
+;	Version		0-000
+
+;
+;	milasm - milieu assembler routines
+;
+
+	.psect	data,noexe,rd,wrt
+
+stmp:	.blkl	1			; varying string temp
+wtmp:	.blkw	1			; word temp
+
+mbinch:	.blkw	1			; input mailbox channel
+mbindv:	.ascid	/MILIEU_MBX/		; input mailbox name
+
+mbiosb:	.blkq	1			; mailbox iosb
+
+str1:	.word	0			; string one
+	.byte	dsc$k_dtype_t
+	.byte	dsc$k_class_d
+	.long	0
+
+	.psect	code,exe,rd,nowrt
+
+;
+;	qcre - create input mailbox (MILIEU_MBX)
+;
+;	procedure qcre; extern;
+;
+
+	.entry	qcre, ^m<>
+
+	$crembx_s chan=mbinch, -	; create mailbox
+		maxmsg=#256, -
+		bufquo=#2560, -
+		lognam=mbindv
+	bsbw	qerr
+
+	ret
+
+;
+;	qrea - read from input mailbox (MILIEU_MBX)
+;
+;	procedure qrea (var str: varying; var pid: integer); extern;
+;
+
+	.entry	qrea, ^m<>
+
+	addl3	#2, 4(ap), r0		; get string data address
+
+	$qiow_s	efn=#1, -		; input request
+		chan=mbinch, -
+		func=#io$_readvblk, -
+		iosb=mbiosb, -
+		p1=(r0), -
+		p2=#256
+	bsbw	qerr
+
+	movl	mbiosb, r0		; check iosb
+	bsbw	qerr
+
+	movw	mbiosb+2, @4(ap)	; return length
+
+	movl	mbiosb+4, @8(ap)	; return pid of sender
+
+	ret
+
+;
+;	qass - assign channel to mailbox
+;
+;	procedure qass (mbx: varying; var chn: integer); extern;
+;
+
+	.entry	qass, ^m<>
+
+	movl	4(ap), r0
+	addl3	#2, 4(ap), str1+4	; set string address
+	movw	@4(ap), str1		; set string length
+
+	$assign_s devnam=str1, -	; assign channel
+		chan=wtmp
+	bsbw	qerr
+
+	movzwl	wtmp, @8(ap)		; return channel number
+
+	ret
+
+;
+;	qdea - deassign channel
+;
+;	procedure qdea (chn: integer); extern;
+;
+
+	.entry	qdea, ^m<>
+
+	$dassgn_s chan=@4(ap)
+	bsbw	qerr
+
+	ret
+
+;
+;	qout - write to mailbox
+;
+;	procedure qout (chn: integer; str: varying); extern;
+;
+
+	.entry	qout, ^m<>
+
+	addl3	#2, 8(ap), r0		; get string data address
+
+	$qiow_s	efn=#1, -
+		chan=@4(ap), -
+		func=#io$_writevblk!io$m_now, -
+		iosb=mbiosb, -
+		p1=(r0), -
+		p2=@8(ap)
+	bsbw	qerr
+	
+	movl	mbiosb, r0		; check iosb
+	bsbw	qerr
+
+	ret
+
+;
+;	qerr - error handling routine (internal use)
+;
+
+qerr:	blbc	r0, 10$			; if error
+	rsb
+
+10$:	pushr	#^m<r0>			; save error code
+	popr	#^m<r0>			; restore error code
+	$exit_s	r0			; exit with status
+
+	.end
