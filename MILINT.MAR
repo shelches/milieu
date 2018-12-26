@@ -1,0 +1,207 @@
+
+	.title	milint
+	.ident	/1-002/
+
+;	John M Ryan	December 4, 1984
+;	Version		1-002	(Feb 16, 1985)
+
+;
+;	milint - milieu interface program
+;
+
+	.psect	data,noexe,rd,wrt
+
+pidlst:	.word	4			; JPI item list for PID
+	.word	jpi$_pid
+	.address pid
+	.address 0
+	.long	0
+
+pid:	.blkl	1			; PID of user
+
+buffer:	.blkb	256			; temp i/o buffer
+buflen:	.blkl	1			; buffer length
+
+mbiosb:	.blkq	1			; mailbox iosb
+
+mbinch:	.blkw	1			; input mailbox channel
+mbtech:	.blkw	1			; terminal mailbox channel
+
+mbindv:	.ascid	/MILIEU_MBX/		; input mailbox name
+mbtedv:	.ascid	/MBX_00000000/		; terminal mailbox name
+
+endams:	.ascid	/End - aborted./
+endnms:	.ascid	/End - normal./
+endtms:	.ascid	/End - timeout./
+
+mbxfao:	.ascid	/MBX_!XL/		; pid fao control string
+logfao:	.ascid	/0MBX_!XL/		; login fao control string
+
+logstr:	.ascid	/             /		; login fao output string
+
+num1:	.ascid	/1/			; number one string
+
+str1:	.word	0			; temp string 1
+	.byte	dsc$k_dtype_t
+	.byte	dsc$k_class_d
+	.long	0
+
+str2:	.word	0			; temp string 2
+	.byte	dsc$k_dtype_t
+	.byte	dsc$k_class_d
+	.long	0
+
+	.psect	code,exe,rd,nowrt
+
+;
+;	milint - milieu interface program
+;
+
+	.entry	milint, ^m<>
+
+	$assign_s devnam=mbindv, -	; assign channel to input mailbox
+		chan=mbinch
+	movb	#1, r1
+	bsbw	milerr
+
+	$getjpi_s efn=#1, -		; get PID
+		itmlst=pidlst
+	movb	#2, r1
+	bsbw	milerr
+
+	$fao_s	ctrstr=mbxfao, -	; build terminal mailbox name
+		outbuf=mbtedv, -
+		p1=pid
+	movb	#3, r1
+	bsbw	milerr
+
+	$crembx_s chan=mbtech, -	; create terminal mailbox
+		maxmsg=#256, -
+		bufquo=#2560, -
+		lognam=mbtedv
+	movb	#4, r1
+	bsbw	milerr
+
+	$fao_s	ctrstr=logfao, -	; build login request
+		outbuf=logstr, -
+		p1=pid
+	movb	#5, r1
+	bsbw	milerr
+
+	$qiow_s	efn=#1, -		; send login request
+		chan=mbinch, -
+		func=#io$_writevblk!io$m_now, -
+		iosb=mbiosb, -
+		p1=@logstr+4, -
+		p2=logstr
+	movb	#6, r1
+	bsbw	milerr
+
+	movzwl	mbiosb, r0		; check iosb
+	movb	#7, r1
+	bsbw	milerr
+
+milin1:	$qiow_s	efn=#1, -		; read terminal mailbox
+		chan=mbtech, -
+		func=#io$_readvblk, -
+		iosb=mbiosb, -
+		p1=buffer, -
+		p2=#256
+	movb	#8, r1
+	bsbw	milerr
+
+	movzwl	mbiosb, r0		; check iosb
+	movb	#9, r1
+	bsbw	milerr
+
+	movzwl	mbiosb+2, buflen	; get length
+	subl2	#1, buflen		; strip off first char
+
+	pushaq	str1
+	pushab	buffer+1
+	pushal	buflen
+	calls	#3, g^lib$scopy_r_dx	; copy string
+	movb	#10, r1
+	bsbw	milerr
+
+	caseb	buffer, #^x30, #^x04
+10$:	.word	milin2-10$		; if 0 (text)
+	.word	milin3-10$		; if 1 (input prompt)
+	.word	milin4-10$		; if 2 (end, normal)
+	.word	milin5-10$		; if 3 (end, abort)
+	.word	milin7-10$		; if 4 (end, timeout)
+
+	brw	milin2			; error - ignore message
+
+milin2:	pushaq	str1
+	calls	#1, g^lib$put_output	; send text
+	movb	#11, r1
+	bsbw	milerr
+	brw	milin1
+
+milin3:	pushaq	str1
+	pushaq	str2
+	calls	#2, g^lib$get_input	; prompt, get input
+	movb	#12, r1
+	bsbw	milerr
+
+	pushaq	num1
+	pushaq	str2
+	calls	#2, g^str$prefix	; add text flag
+	movb	#13, r1
+	bsbw	milerr
+
+	$qiow_s	efn=#1, -		; send string to mailbox
+		chan=mbinch, -
+		func=#io$_writevblk!io$m_now, -
+		iosb=mbiosb, -
+		p1=@str2+4, -
+		p2=str2
+	movb	#14, r1
+	bsbw	milerr
+
+	movzwl	mbiosb, r0		; check iosb
+	movb	#15, r1
+	bsbw	milerr
+	brw	milin1			; loop
+
+milin4:	pushaq	endnms
+	calls	#1, g^lib$put_output	; send end/normal message
+	movb	#16, r1
+	bsbw	milerr
+	brw	milin6
+
+milin5:	pushaq	endams
+	calls	#1, g^lib$put_output	; send end/abort message
+	movb	#17, r1
+	bsbw	milerr
+	brw	milin6
+
+milin7:	pushaq	endtms
+	calls	#1, g^lib$put_output	; send end/abort message
+	movb	#17, r1
+	bsbw	milerr
+	brw	milin6
+
+milin6:	$dassgn_s chan=mbinch		; deassign input mailbox
+	movb	#18, r1
+	bsbw	milerr
+
+	$dassgn_s chan=mbtech		; deassign terminal mailbox
+	movb	#19, r1
+	bsbw	milerr
+
+	$exit_s
+
+;
+;	milerr - error handling routine (internal use)
+;
+
+milerr:	blbc	r0, 10$			; if error
+	rsb
+
+10$:	pushr	#^m<r0>			; save error code
+	popr	#^m<r0>			; restore error code
+	$exit_s	r0			; exit with status
+
+	.end	milint
